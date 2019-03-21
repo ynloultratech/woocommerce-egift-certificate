@@ -1,4 +1,4 @@
-# woocommerce-egift-certificate
+# WooCommerce eGiftCertificate
 
 [![Status](https://travis-ci.org/ynloultratech/woocommerce-egift-certificate.svg?branch=master)](https://travis-ci.org/ynloultratech/woocommerce-egift-certificate)
 [![Downloads](https://img.shields.io/github/downloads/ynloultratech/woocommerce-egift-certificate/total.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate/releases/latest)
