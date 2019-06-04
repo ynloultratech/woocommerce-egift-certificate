@@ -47,6 +47,27 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
+    'auto_redirect' => [
+        'title' => __('Auto Redirect', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Auto-redirect to order page after success payment', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
+    'auto_redeem' => [
+        'title' => __('Auto Redeem', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Redeem purchased eGiftCertificate automatically', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
+    'allow_share' => [
+        'title' => __('Allow Share', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Allow customers to share payments with others', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
     'debug' => [
         'title' => __('Debug log', 'woocommerce'),
         'type' => 'checkbox',

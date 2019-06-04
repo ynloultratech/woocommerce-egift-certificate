@@ -118,10 +118,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
                 'jti' => $order->get_id(),
                 'iss' => $this->apiID,
                 'iat' => (new DateTime())->getTimestamp(),
-                'exp' => (new DateTime('+2hours'))->getTimestamp(),
-                'ip' => get_the_user_ip(),
-                'agent' => isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : null,
-                'origin' => isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : null,
+                'exp' => (new DateTime('+4hours'))->getTimestamp(),
             ],
             $this->apiKey
         );
@@ -130,13 +127,28 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             'token' => $token,
             'orderNumber' => $order->get_id(),
             'amount' => $order->get_total(),
+            'receiptEmail' => $order->get_billing_email(),
             'redirectUrl' => $this->get_return_url($order),
             'IPNHandlerUrl' => wc()->api_request_url('egift-ipn'),
+            'autoRedirect' => $this->get_option('auto_redirect') === 'yes',
+            'autoRedeem' => $this->get_option('auto_redeem') === 'yes',
+            'allowShare' => $this->get_option('allow_share') === 'yes',
         ];
+
+        $claimToken = JWT::encode(
+            [
+                'jti' => wp_generate_uuid4(),
+                'iss' => $this->apiID,
+                'iat' => (new DateTime())->getTimestamp(),
+                'exp' => (new DateTime($this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'))->getTimestamp(),
+                'params' => $params,
+            ],
+            $this->apiKey
+        );
 
         return [
             'result' => 'success',
-            'redirect' => $this->eGiftPaymentUrl.'?'.http_build_query($params),
+            'redirect' => $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]),
         ];
     }
 
