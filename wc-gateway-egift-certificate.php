@@ -136,6 +136,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             'autoRedirect' => $this->get_option('auto_redirect') === 'yes',
             'autoRedeem' => $this->get_option('auto_redeem') === 'yes',
             'allowShare' => $this->get_option('allow_share') === 'yes',
+            'cardSwiper' => $this->get_option('card_swiper') === 'yes',
         ];
 
         $claimToken = JWT::encode(

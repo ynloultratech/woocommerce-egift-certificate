@@ -47,6 +47,13 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
+    'card_swiper' => [
+        'title' => __('Allow Card Readers', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Show/Hide a button to allow customers to swipe the credit card using a magnetic card reader', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
     'auto_redirect' => [
         'title' => __('Auto Redirect', 'woocommerce'),
         'type' => 'checkbox',
