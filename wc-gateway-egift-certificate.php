@@ -329,7 +329,7 @@ GraphQL;
         $fields = [];
 
         $autoRedeem = null;
-        if ($this->get_option('auto_redeem')) {
+        if ($this->get_option('auto_redeem') === 'yes') {
             $autoRedeem = <<<HTML
 <script>
 window.addEventListener('load', function(){
