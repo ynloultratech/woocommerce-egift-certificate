@@ -9,8 +9,10 @@
  * @version   1.0.x
  */
 
-class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
+class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
 {
+    const META_EGIFT_PIN = '_egift_pin';
+
     /**
      * Whether or not logging is enabled
      *
@@ -29,6 +31,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
      * @var string
      */
     protected $eGiftPaymentUrl = 'https://egiftcert.paynup.com';
+
+    /**
+     * @var string
+     */
+    protected $apiUrl = 'https://api.paynup.com';
 
     /**
      * @var bool
@@ -51,7 +58,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
     public function __construct()
     {
         $this->id = 'egift-certificate';
-        $this->has_fields = false;
+        $this->has_fields = true;
         $this->order_button_text = __('continue', 'woocommerce');
         $this->method_title = __('eGiftCertificate', 'woocommerce');
         $this->method_description = __('Use eGiftCertificate to interchange for goods', 'woocommerce');
@@ -61,6 +68,10 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
 
         if (defined('EGIFT_PAYMENT_URL')) {
             $this->eGiftPaymentUrl = EGIFT_PAYMENT_URL;
+        }
+
+        if (defined('PAYNUP_API_URL')) {
+            $this->apiUrl = PAYNUP_API_URL;
         }
 
         // Load the settings.
@@ -110,7 +121,28 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
     {
         /** @var WC_Order $order */
         $order = wc_get_order($order_id);
+        if ($this->has_fields()) {
+            $pin = null;
+            if (isset($this->get_post_data()['egift-certificate-pin'])) {
+                $pin = $this->get_post_data()['egift-certificate-pin'];
+            }
 
+            if ($pin === $order->get_meta(self::META_EGIFT_PIN)) {
+                return $this->redeemPurchasedPin($order);
+            }
+
+            wc_add_notice('Invalid eGiftCertificate, try again with a valid PIN.', 'error');
+
+            return [
+                'result' => 'failure',
+            ];
+        }
+
+        return $this->processPaymentOnNewOrder($order);
+    }
+
+    public function processPaymentOnNewOrder(WC_Order $order)
+    {
         include 'jwt.php';
 
         $token = JWT::encode(
@@ -123,6 +155,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             $this->apiKey
         );
 
+        $redirectUrl = $this->get_return_url($order);
+        if ($this->get_option('redeem_in_store') === 'yes') {
+            $redirectUrl = $order->get_checkout_payment_url();
+        }
+
         $params = [
             'token' => $token,
             'orderNumber' => $order->get_id(),
@@ -131,10 +168,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             'customerName' => $order->get_billing_first_name().' '.$order->get_billing_last_name(),
             'billingAddress' => $order->get_billing_address_1(),
             'billingZipCode' => $order->get_billing_postcode(),
-            'redirectUrl' => $this->get_return_url($order),
+            'redirectUrl' => $redirectUrl,
             'IPNHandlerUrl' => wc()->api_request_url('egift-ipn'),
             'autoRedirect' => $this->get_option('auto_redirect') === 'yes',
             'autoRedeem' => $this->get_option('auto_redeem') === 'yes',
+            'allowRedeem' => $this->get_option('redeem_in_store') !== 'yes',
             'allowShare' => $this->get_option('allow_share') === 'yes',
             'cardSwiper' => $this->get_option('card_swiper') === 'yes',
         ];
@@ -150,10 +188,66 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             $this->apiKey
         );
 
+        wc()->cart->empty_cart();
+
         return [
             'result' => 'success',
             'redirect' => $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]),
         ];
+    }
+
+    public function redeemPurchasedPin(WC_Order $order)
+    {
+        $pin = $order->get_meta(self::META_EGIFT_PIN);
+        $mutation = <<<GraphQL
+mutation (\$pin: String!){
+  pins {
+    redeem(input: {pin: \$pin})
+  }
+}
+GraphQL;
+
+        include 'jwt.php';
+        $egiftGateway = new WC_Gateway_EGift_Certificate();
+
+        $token = JWT::encode(
+            [
+                'jti' => wp_generate_uuid4(),
+                'iss' => $egiftGateway->get_option('api_id'),
+                'iat' => (new DateTime())->getTimestamp(),
+                'exp' => (new DateTime('+4hours'))->getTimestamp(),
+                'ip' => get_the_user_ip(),
+                'agent' => wc_get_user_agent(),
+                'origin' => isset($_SERVER['HTTP_HOST']) ? wc_clean(wp_unslash($_SERVER['HTTP_HOST'])) : '',
+            ],
+            $egiftGateway->get_option('api_key')
+        );
+
+        $body = json_encode(['query' => $mutation, 'variables' => ['pin' => $pin]]);
+        $response = wp_remote_post(
+            $this->apiUrl,
+            [
+                'headers' => [
+                    'Authorization' => sprintf('Bearer %s', $token),
+                ],
+                'body' => $body,
+            ]
+        );
+
+        if (isset($response['body'])) {
+            $data = @json_decode($response['body'], true);
+            if (isset($data['data']['pins']['redeem']) && $data['data']['pins']['redeem']) {
+                // Remove cart
+                WC()->cart->empty_cart();
+
+                return [
+                    'result' => 'success',
+                    'redirect' => $this->get_return_url($order),
+                ];
+            }
+        }
+
+        return [];
     }
 
     public function ipnHandler()
@@ -178,9 +272,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
         if (isset($payload->orderNumber)) {
             $order = wc_get_order($payload->orderNumber);
 
+            //allow up to 10 cents of difference in amount
+            $diff = abs($payload->amount - $order->get_total());
             if ($payload->iss !== $this->apiID
                 || !$order
-                || $payload->amount != $order->get_total()
+                || $diff > 0.10
             ) {
                 self::log('IPN received with invalid token content, invalid order or amount', 'error');
                 wp_die('IPN does not match with any existent order', 'eGiftCertificate IPN', ['response' => 500]);
@@ -190,13 +286,14 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
             if ($payload->status === 'SOLD') {
                 self::log('IPN received with SOLD status of eGiftCertificate');
                 $order->add_order_note(sprintf('eGiftCertificate obtained: %s', $payload->pin));
+                $order->add_meta_data(self::META_EGIFT_PIN, $payload->pin);
+                $order->save_meta_data();
             }
 
-            if ($payload->status === 'USED') {
+            if ($payload->status === 'USED' && $order->get_meta(self::META_EGIFT_PIN) === $payload->pin) {
                 self::log('IPN received with USED status of eGiftCertificate');
                 $order->add_order_note('eGiftCertificate validated & redeemed successfully');
                 $order->payment_complete($payload->pin);
-                wc()->cart->empty_cart();
             }
         } else {
             self::log('IPN received with invalid payload');
@@ -210,6 +307,61 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway
     public function init_form_fields()
     {
         $this->form_fields = include 'settings.php';
+    }
+
+    /**
+     * @return bool
+     */
+    public function has_fields()
+    {
+        return !(is_checkout() && !is_wc_endpoint_url('order-pay'));
+    }
+
+    /**
+     * Frontend Form for PIN Redemption
+     */
+    public function form()
+    {
+        global $wp;
+        $order_id = $wp->query_vars['order-pay'];
+        $order = new WC_Order($order_id);
+
+        $fields = [];
+
+        $autoRedeem = null;
+        if ($this->get_option('auto_redeem')) {
+            $autoRedeem = <<<HTML
+<script>
+window.addEventListener('load', function(){
+    document.getElementById("place_order").click();
+})
+</script>
+HTML;
+
+        }
+
+        $default_fields = [
+            'pin-field' => '<p class="form-row form-row-wide">
+				<label for="'.esc_attr($this->id).'-pin">'.esc_html__('eGift Certificate', 'woocommerce').'&nbsp;<span class="required">*</span></label>
+				<input value="'.$order->get_meta(self::META_EGIFT_PIN).'" id="'.esc_attr($this->id).'-pin" required="required" style="font-size:18px" class="input-text" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;" '.$this->field_name('pin').' />
+			    '.$autoRedeem.'
+			</p>',
+        ];
+
+        $fields = wp_parse_args($fields, apply_filters('woocommerce_egift_form_fields', $default_fields, $this->id));
+        ?>
+
+        <fieldset id="wc-<?php echo esc_attr($this->id); ?>-cc-form" class='wc-credit-card-form wc-payment-form'>
+            <?php do_action('woocommerce_credit_card_form_start', $this->id); ?>
+            <?php
+            foreach ($fields as $field) {
+                echo $field; // phpcs:ignore WordPress.XSS.EscapeOutput.OutputNotEscaped
+            }
+            ?>
+            <?php do_action('woocommerce_credit_card_form_end', $this->id); ?>
+            <div class="clear"></div>
+        </fieldset>
+        <?php
     }
 
     /**

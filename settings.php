@@ -68,6 +68,13 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
+    'redeem_in_store' => [
+        'title' => __('Redeem In Store', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Redeem purchased eGiftCertificate in the store instead of payment form.', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
     'allow_share' => [
         'title' => __('Allow Share', 'woocommerce'),
         'type' => 'checkbox',
