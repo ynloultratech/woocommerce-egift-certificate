@@ -26,11 +26,18 @@ return [
         'desc_tip' => true,
     ],
     'description' => [
-        'title' => __('Description', 'woocommerce'),
+        'title' => __('Purchase Description', 'woocommerce'),
         'type' => 'text',
         'desc_tip' => true,
         'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
-        'default' => __('', 'woocommerce'),
+        'default' => '',
+    ],
+    'description_redeem' => [
+        'title' => __('Redemption Description', 'woocommerce'),
+        'type' => 'text',
+        'desc_tip' => true,
+        'description' => __('This controls the description which the user sees during checkout.', 'woocommerce'),
+        'default' => '',
     ],
     'api_id' => [
         'title' => __('API ID', 'woocommerce'),

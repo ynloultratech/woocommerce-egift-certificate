@@ -349,11 +349,22 @@ HTML;
 
         }
 
+        $description = null;
+        if ($description = $this->get_option('description_redeem')) {
+            $description = <<<HTML
+<p>
+$description
+</p>
+HTML;
+
+        }
+
         $default_fields = [
             'pin-field' => '<p class="form-row form-row-wide">
 				<label for="'.esc_attr($this->id).'-pin">'.esc_html__('eGift Certificate', 'woocommerce').'&nbsp;<span class="required">*</span></label>
 				<input value="'.$order->get_meta(self::META_EGIFT_PIN).'" id="'.esc_attr($this->id).'-pin" required="required" style="font-size:18px" class="input-text" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;" '.$this->field_name('pin').' />
 			    '.$autoRedeem.'
+			    '.$description.'
 			</p>',
         ];
 
