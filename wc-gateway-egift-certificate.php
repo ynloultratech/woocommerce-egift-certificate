@@ -314,7 +314,7 @@ GraphQL;
      */
     public function has_fields()
     {
-        return !(is_checkout() && !is_wc_endpoint_url('order-pay'));
+        return is_checkout() && is_wc_endpoint_url('order-pay');
     }
 
     /**
@@ -322,6 +322,15 @@ GraphQL;
      */
     public function form()
     {
+        if (!$this->has_fields()) {
+            $description = $this->get_description();
+            if ($description) {
+                echo wpautop(wptexturize($description)); // @codingStandardsIgnoreLine.
+            }
+
+            return;
+        }
+
         global $wp;
         $order_id = $wp->query_vars['order-pay'];
         $order = new WC_Order($order_id);
