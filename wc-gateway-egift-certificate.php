@@ -88,6 +88,26 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_egift-ipn', [$this, 'ipnHandler']);
+
+        add_filter(
+            'woocommerce_order_details_after_order_table_items',
+            function (WC_Order $order) {
+                $pin = $order->get_meta(self::META_EGIFT_PIN);
+                if ($pin) {
+                    echo <<<HTML
+<tr>
+<th scope="row">
+eGift Certificate
+</th>
+<td>
+<b style="font-size: 120%; color: brown">$pin<b>
+</td>
+</tr>
+HTML;
+                }
+
+            }
+        );
     }
 
     /**
