@@ -195,6 +195,7 @@ HTML;
             'allowRedeem' => $this->get_option('redeem_in_store') !== 'yes',
             'allowShare' => $this->get_option('allow_share') === 'yes',
             'cardSwiper' => $this->get_option('card_swiper') === 'yes',
+            'paymentMethod' => $this->get_option('payment_method', 'CREDIT_CARD'),
         ];
 
         $claimToken = JWT::encode(
