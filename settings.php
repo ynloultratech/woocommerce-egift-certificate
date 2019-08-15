@@ -62,7 +62,7 @@ return [
         'desc_tip' => true,
         'options' => array(
             'CREDIT_CARD' => 'Credit Card',
-            'EWALLET' => 'eWallet',
+            'VIRTUAL_CHECKING_ACCOUNT' => 'Virtual Checking Account',
         ),
     ],
     'card_swiper' => [
