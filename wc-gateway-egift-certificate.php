@@ -188,6 +188,8 @@ HTML;
             'customerName' => $order->get_billing_first_name().' '.$order->get_billing_last_name(),
             'billingAddress' => $order->get_billing_address_1(),
             'billingZipCode' => $order->get_billing_postcode(),
+            'billingCity' => $order->get_billing_city(),
+            'billingState' => $order->get_billing_state(),
             'redirectUrl' => $redirectUrl,
             'IPNHandlerUrl' => wc()->api_request_url('egift-ipn'),
             'autoRedirect' => $this->get_option('auto_redirect') === 'yes',
