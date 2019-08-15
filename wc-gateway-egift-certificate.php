@@ -186,6 +186,7 @@ HTML;
             'amount' => $order->get_total(),
             'receiptEmail' => $order->get_billing_email(),
             'customerName' => $order->get_billing_first_name().' '.$order->get_billing_last_name(),
+            'customerPhone' => $order->get_billing_phone(),
             'billingAddress' => $order->get_billing_address_1(),
             'billingZipCode' => $order->get_billing_postcode(),
             'billingCity' => $order->get_billing_city(),
