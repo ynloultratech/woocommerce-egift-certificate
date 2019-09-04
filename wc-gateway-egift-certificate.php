@@ -81,6 +81,19 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         // Define user set variables.
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
+
+        if (!$this->description) {
+            if ($this->get_option('payment_method') === 'CREDIT_CARD') {
+
+            } else {
+                $this->description = <<<HTML
+<b>IMPORTANT INFORMATION FOR OPENING A MESH ACCOUNT:</b> To help the federal government fight the funding of terrorism and money laundering activities, the PATRIOT ACT Title III Section 326 and FinCEN 31 CFR 1020.220 requires us to obtain, verify and record information that identifies each person before we can activate your MESH account.</p><p>
+<b>WHAT THIS MEANS FOR YOU:</b> When you open a MESH account, we will ask for your <b>name, address, date of birth</b> and your <b>government ID number</b>.  Use of a MESH account is also subject to fraud prevention restrictions at any time, with or without notice.</p><p>
+MESH accounts are issued by Bridge Community Bank (Member FDIC)
+HTML;
+            }
+        }
+
         $this->debug = 'yes' === $this->get_option('debug', 'no');
         $this->apiID = $this->get_option('api_id');
         $this->apiKey = $this->get_option('api_key');
