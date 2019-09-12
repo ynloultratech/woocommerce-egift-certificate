@@ -406,6 +406,9 @@ HTML;
 				<input value="'.$order->get_meta(self::META_EGIFT_PIN).'" id="'.esc_attr($this->id).'-pin" required="required" style="font-size:18px" class="input-text" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;" '.$this->field_name('pin').' />
 			    '.$autoRedeem.'
 			    '.$description.'
+			    <script>
+    document.getElementById("payment_method_egift-certificate").click();
+</script>
 			</p>',
         ];
 
