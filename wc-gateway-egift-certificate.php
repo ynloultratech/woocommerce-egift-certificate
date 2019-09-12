@@ -156,6 +156,7 @@ HTML;
         $order = wc_get_order($order_id);
         if ($this->has_fields()) {
             $pin = null;
+            // get pin from submitted data
             if (isset($this->get_post_data()['egift-certificate-pin'])) {
                 $pin = $this->get_post_data()['egift-certificate-pin'];
             }
@@ -225,8 +226,6 @@ HTML;
             $this->apiKey
         );
 
-        wc()->cart->empty_cart();
-
         return [
             'result' => 'success',
             'redirect' => $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]),
@@ -236,6 +235,11 @@ HTML;
     public function redeemPurchasedPin(WC_Order $order)
     {
         $pin = $order->get_meta(self::META_EGIFT_PIN);
+
+        if (!$pin) {
+            return [];
+        }
+
         $mutation = <<<GraphQL
 mutation (\$pin: String!){
   pins {
