@@ -13,7 +13,7 @@
  * Plugin Name: WooCommerce eGiftCertificate
  * Plugin URI: https://www.paynup.com
  * Description: Use eGiftCertificate as a form of exchange for goods
- * Version: 1.0
+ * Version: 1.1
  * Author: YnloUltratech
  * Author URI: http://ynloultratech.com/
  **/
