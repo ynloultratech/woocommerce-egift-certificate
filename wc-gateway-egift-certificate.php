@@ -177,7 +177,7 @@ HTML;
 
     public function processPaymentOnNewOrder(WC_Order $order)
     {
-        include 'jwt.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
 
         $token = JWT::encode(
             [
@@ -248,7 +248,7 @@ mutation (\$pin: String!){
 }
 GraphQL;
 
-        include 'jwt.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
         $egiftGateway = new WC_Gateway_EGift_Certificate();
 
         $token = JWT::encode(
@@ -295,7 +295,7 @@ GraphQL;
     {
         $token = @file_get_contents('php://input');
 
-        include 'jwt.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
 
         if (!$token) {
             self::log('IPN received without a token in the body', 'error');
@@ -347,7 +347,7 @@ GraphQL;
      */
     public function init_form_fields()
     {
-        $this->form_fields = include 'settings.php';
+        $this->form_fields = include __DIR__.DIRECTORY_SEPARATOR.'settings.php';
     }
 
     /**
