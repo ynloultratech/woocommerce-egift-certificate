@@ -54,17 +54,6 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
-    'payment_method' => [
-        'title' => __('Payment Method', 'woocommerce'),
-        'type' => 'select',
-        'description' => __('Payment method used to purchase the eGiftCertificate', 'woocommerce'),
-        'default' => 'CREDIT_CARD',
-        'desc_tip' => true,
-        'options' => array(
-            'CREDIT_CARD' => 'Credit Card',
-            'VIRTUAL_CHECKING_ACCOUNT' => 'Virtual Checking Account',
-        ),
-    ],
     'card_swiper' => [
         'title' => __('Allow Card Readers', 'woocommerce'),
         'type' => 'checkbox',

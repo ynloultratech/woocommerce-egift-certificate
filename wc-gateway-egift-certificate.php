@@ -82,16 +82,12 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->title = $this->get_option('title');
         $this->description = $this->get_option('description');
 
-        if (!$this->description) {
-            if ($this->get_option('payment_method') === 'CREDIT_CARD') {
-
-            } else {
-                $this->description = <<<HTML
+        if (empty($this->description)) {
+            $this->description = <<<HTML
 <b>IMPORTANT INFORMATION FOR OPENING A MESH ACCOUNT:</b> To help the federal government fight the funding of terrorism and money laundering activities, the PATRIOT ACT Title III Section 326 and FinCEN 31 CFR 1020.220 requires us to obtain, verify and record information that identifies each person before we can activate your MESH account.</p><p>
 <b>WHAT THIS MEANS FOR YOU:</b> When you open a MESH account, we will ask for your <b>name, address, date of birth</b> and your <b>government ID number</b>.  Use of a MESH account is also subject to fraud prevention restrictions at any time, with or without notice.</p><p>
 MESH accounts are issued by Bridge Community Bank (Member FDIC)
 HTML;
-            }
         }
 
         $this->debug = 'yes' === $this->get_option('debug', 'no');
@@ -154,7 +150,7 @@ HTML;
     {
         /** @var WC_Order $order */
         $order = wc_get_order($order_id);
-        if ($this->has_fields()) {
+        if ($order->get_meta(self::META_EGIFT_PIN)) {
             $pin = null;
             // get pin from submitted data
             if (isset($this->get_post_data()['egift-certificate-pin'])) {
@@ -375,6 +371,12 @@ GraphQL;
         global $wp;
         $order_id = $wp->query_vars['order-pay'];
         $order = new WC_Order($order_id);
+
+        if (!$order->get_meta(self::META_EGIFT_PIN)) {
+            echo $this->description;
+
+            return;
+        }
 
         $fields = [];
 
