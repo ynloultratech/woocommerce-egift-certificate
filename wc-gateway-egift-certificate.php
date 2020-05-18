@@ -207,6 +207,7 @@ HTML;
             'allowRedeem' => $this->get_option('redeem_in_store') !== 'yes',
             'allowShare' => $this->get_option('allow_share') === 'yes',
             'cardSwiper' => $this->get_option('card_swiper') === 'yes',
+            'qrCode' => $this->get_option('qr_code') === 'yes',
             'paymentMethod' => $this->get_option('payment_method', 'CREDIT_CARD'),
         ];
 

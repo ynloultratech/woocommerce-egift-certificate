@@ -89,6 +89,13 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
+    'qr_code' => [
+        'title' => __('QR Code', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Show QR code to continue payment in the customer phone', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
     'debug' => [
         'title' => __('Debug log', 'woocommerce'),
         'type' => 'checkbox',
