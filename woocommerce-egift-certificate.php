@@ -6,14 +6,14 @@
  * @copyright 2019 Copyright(c) - All rights reserved.
  * @author    YNLO-Ultratech Development Team <developer@ynloultratech.com>
  * @package   woocommerce-egift-WC_Gateway_EGift_Certificate
- * @version   1.0.x
+ * @version   2.0.x
  */
 
 /**
  * Plugin Name: WooCommerce eGiftCertificate
  * Plugin URI: https://www.paynup.com
  * Description: Use eGiftCertificate as a form of exchange for goods
- * Version: 1.2
+ * Version: 2.0
  * Author: YnloUltratech
  * Author URI: http://ynloultratech.com/
  **/
