@@ -194,10 +194,18 @@ HTML;
         if ($order->get_payment_method() === $this->id && !isset($_GET['pay_for_order'])) {
             $params = json_encode($this->getParams($order));
 
+            $checkout = $order->get_checkout_payment_url();
+
             echo <<<HTML
 <script>
    window.onload = function() {
-      eGiftCertificate.start($params);
+      eGiftCertificate.onEvent(function(e){
+          switch (e.name) {
+            case 'CLOSE':
+                 window.location = '$checkout';
+                 break;
+          }
+      }).start($params);
    }
 </script>
 HTML;
