@@ -16,7 +16,7 @@ return [
         'title' => __('Enable/Disable', 'woocommerce'),
         'type' => 'checkbox',
         'label' => __('Enable eGiftCertificate', 'woocommerce'),
-        'default' => 'no',
+        'default' => 'yes',
     ],
     'title' => [
         'title' => __('Title', 'woocommerce'),
@@ -58,7 +58,7 @@ return [
         'title' => __('Pay in iFrame', 'woocommerce'),
         'type' => 'checkbox',
         'description' => __('Use a iframe to load eGiftCertificate payment page in the checkout page without redirections', 'woocommerce'),
-        'default' => '',
+        'default' => 'yes',
         'desc_tip' => true,
     ],
     'card_swiper' => [
@@ -72,14 +72,14 @@ return [
         'title' => __('Auto Redirect', 'woocommerce'),
         'type' => 'checkbox',
         'description' => __('Auto-redirect to order page after success payment', 'woocommerce'),
-        'default' => '',
+        'default' => 'yes',
         'desc_tip' => true,
     ],
     'auto_redeem' => [
         'title' => __('Auto Redeem', 'woocommerce'),
         'type' => 'checkbox',
         'description' => __('Redeem purchased eGiftCertificate automatically', 'woocommerce'),
-        'default' => '',
+        'default' => 'yes',
         'desc_tip' => true,
     ],
     'redeem_in_store' => [
