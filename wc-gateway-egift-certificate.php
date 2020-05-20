@@ -35,7 +35,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
     /**
      * @var string
      */
-    protected $eGiftWidgetScript = 'https://egiftcert.paynup.com/widget.js';
+    protected $eGiftWidgetScript = 'https://egiftcert-widget.paynup.com/index.js';
 
     /**
      * @var string
