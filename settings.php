@@ -54,6 +54,13 @@ return [
         'default' => '',
         'desc_tip' => true,
     ],
+    'iframe' => [
+        'title' => __('Pay in iFrame', 'woocommerce'),
+        'type' => 'checkbox',
+        'description' => __('Use a iframe to load eGiftCertificate payment page in the checkout page without redirections', 'woocommerce'),
+        'default' => '',
+        'desc_tip' => true,
+    ],
     'card_swiper' => [
         'title' => __('Allow Card Readers', 'woocommerce'),
         'type' => 'checkbox',
@@ -90,7 +97,7 @@ return [
         'desc_tip' => true,
     ],
     'qr_code' => [
-        'title' => __('QR Code', 'woocommerce'),
+        'title' => __('Private Checkout (QR Code)', 'woocommerce'),
         'type' => 'checkbox',
         'description' => __('Show QR code to continue payment in the customer phone', 'woocommerce'),
         'default' => '',

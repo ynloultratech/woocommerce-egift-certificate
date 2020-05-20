@@ -35,6 +35,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
     /**
      * @var string
      */
+    protected $eGiftWidgetScript = 'https://egiftcert.paynup.com/widget.js';
+
+    /**
+     * @var string
+     */
     protected $apiUrl = 'https://api.paynup.com';
 
     /**
@@ -74,6 +79,10 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
             $this->apiUrl = PAYNUP_API_URL;
         }
 
+        if (defined('EGIFT_WIDGET_SCRIPT')) {
+            $this->eGiftWidgetScript = EGIFT_WIDGET_SCRIPT;
+        }
+
         // Load the settings.
         $this->init_form_fields();
         $this->init_settings();
@@ -96,6 +105,11 @@ HTML;
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_egift-ipn', [$this, 'ipnHandler']);
+        add_action('after_woocommerce_pay', [$this, 'afterPayment']);
+
+        if ($this->get_option('iframe') === 'yes') {
+            wp_enqueue_script('egiftCertificateWidget', $this->eGiftWidgetScript);
+        }
 
         add_filter(
             'woocommerce_order_details_after_order_table_items',
@@ -170,9 +184,60 @@ HTML;
         return $this->processPaymentOnNewOrder($order);
     }
 
+    public function afterPayment()
+    {
+        global $wp;
+
+        /** @var WC_Order $order */
+        $order = wc_get_order($wp->query_vars['order-pay']);
+
+        if ($order->get_payment_method() === $this->id && !isset($_GET['pay_for_order'])) {
+            $params = json_encode($this->getParams($order));
+
+            echo <<<HTML
+<script>
+   window.onload = function() {
+      eGiftCertificate.start($params);
+   }
+</script>
+HTML;
+        }
+    }
+
+
     public function processPaymentOnNewOrder(WC_Order $order)
     {
-        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
+        if (!class_exists('JWT')) {
+            include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
+        }
+
+        $claimToken = JWT::encode(
+            [
+                'jti' => wp_generate_uuid4(),
+                'iss' => $this->apiID,
+                'iat' => (new DateTime())->getTimestamp(),
+                'exp' => (new DateTime($this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'))->getTimestamp(),
+                'params' => $this->getParams($order),
+            ],
+            $this->apiKey
+        );
+
+        $redirectUrl = $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]);
+        if ($this->get_option('iframe') === 'yes') {
+            $redirectUrl = $order->get_checkout_payment_url(true);
+        }
+
+        return [
+            'result' => 'success',
+            'redirect' => $redirectUrl,
+        ];
+    }
+
+    public function getParams(WC_Order $order)
+    {
+        if (!class_exists('JWT')) {
+            include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
+        }
 
         $token = JWT::encode(
             [
@@ -208,24 +273,9 @@ HTML;
             'allowShare' => $this->get_option('allow_share') === 'yes',
             'cardSwiper' => $this->get_option('card_swiper') === 'yes',
             'qrCode' => $this->get_option('qr_code') === 'yes',
-            'paymentMethod' => $this->get_option('payment_method', 'CREDIT_CARD'),
         ];
 
-        $claimToken = JWT::encode(
-            [
-                'jti' => wp_generate_uuid4(),
-                'iss' => $this->apiID,
-                'iat' => (new DateTime())->getTimestamp(),
-                'exp' => (new DateTime($this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'))->getTimestamp(),
-                'params' => $params,
-            ],
-            $this->apiKey
-        );
-
-        return [
-            'result' => 'success',
-            'redirect' => $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]),
-        ];
+        return $params;
     }
 
     public function redeemPurchasedPin(WC_Order $order)
