@@ -84,6 +84,50 @@ HTML;
         add_filter('plugins_api', [$updater, 'setPluginInfo'], 10, 3);
         add_filter('upgrader_post_install', [$updater, 'postInstall'], 10, 3);
 
+        // show "View details" link in plugin list
+        add_filter(
+            'plugin_row_meta',
+            static function ($metas, $file, $plugin_data) {
+                if ($file === plugin_basename(__FILE__)) {
+                    $haveDetails = false;
+                    foreach ($metas as $meta) {
+                        if (strpos($meta, 'plugin-information') !== false) {
+                            $haveDetails = true;
+                        }
+                    }
+
+                    if (!$haveDetails) {
+                        $metas[] = sprintf(
+                            '<a href="%s" class="thickbox open-plugin-details-modal" aria-label="%s" data-title="%s">%s</a>',
+                            esc_url(
+                                network_admin_url(
+                                    sprintf('plugin-install.php?tab=plugin-information&amp;plugin=%s&amp;TB_iframe=true', $file)
+                                )
+                            ),
+                            esc_attr(sprintf(__('More information about %s'), $plugin_data['Name'])),
+                            esc_attr($plugin_data['Name']),
+                            __('View details')
+                        );
+                    }
+                }
+
+                return $metas;
+            },
+            10,
+            3
+        );
+
+        add_filter(
+            'plugin_action_links_'.plugin_basename(__FILE__),
+            static function ($links) {
+                $settings = [
+                    '<a href="'.admin_url('admin.php?page=wc-settings&tab=checkout&section=egift-certificate').'">Settings</a>',
+                ];
+
+                return array_merge($settings, $links);
+            }
+        );
+
         // register gateway
         add_filter(
             'woocommerce_payment_gateways',
