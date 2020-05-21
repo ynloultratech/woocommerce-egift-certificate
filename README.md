@@ -1,6 +1,5 @@
 # WooCommerce eGiftCertificate
 
-[![Status](https://travis-ci.org/ynloultratech/woocommerce-egift-certificate.svg?branch=master)](https://travis-ci.org/ynloultratech/woocommerce-egift-certificate)
 [![Downloads](https://img.shields.io/github/downloads/ynloultratech/woocommerce-egift-certificate/total.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate/releases/latest)
 [![Version](https://img.shields.io/github/release/ynloultratech/woocommerce-egift-certificate.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate)
 [![WordPress](https://img.shields.io/badge/Wordpress-4.6+-blue.svg)](http://wordpress.com)
@@ -8,7 +7,7 @@
 
 ## Requirements
 
-- WordPress / requires: 5.0+
+- WordPress / requires: 4.0+
 - WooCommerce / requires: 3.4+
 
 ## Install
