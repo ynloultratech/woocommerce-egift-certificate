@@ -4,7 +4,7 @@
 [![WordPress](https://img.shields.io/badge/Wordpress-4.6+-blue.svg)](http://wordpress.com)
 [![License](https://img.shields.io/github/license/ynloultratech/woocommerce-egift-certificate.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate/blob/master/LICENSE)
 
-![eGiftCertificate](egift.png)
+![eGiftCertificate](https://raw.githubusercontent.com/ynloultratech/woocommerce-egift-certificate/master/egift.png)
 
 ## Requirements
 
