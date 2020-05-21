@@ -81,7 +81,8 @@ class eGiftCertificate_Updater
 
         // Check the versions if we need to do an update
         $version = isset($this->pluginData['Version']) ? $this->pluginData['Version'] : '';
-        $doUpdate = version_compare($this->githubAPIResult->tag_name, $version);
+        $releaseVersion = preg_replace('/^v/', null, $this->githubAPIResult->tag_name);
+        $doUpdate = version_compare($releaseVersion, $version);
 
         // Update the transient to include our updated plugin data
         if ($doUpdate === 1) {
