@@ -80,9 +80,9 @@ HTML;
 
         // updater
         $updater = new eGiftCertificate_Updater(__FILE__);
-       add_filter('pre_set_site_transient_update_plugins', [$updater, 'setTransient']);
+        add_filter('pre_set_site_transient_update_plugins', [$updater, 'setTransient']);
         add_filter('plugins_api', [$updater, 'setPluginInfo'], 10, 3);
-      //  add_filter('upgrader_post_install', [$updater, 'postInstall'], 10, 3);
+        add_filter('upgrader_post_install', [$updater, 'postInstall'], 10, 3);
 
         // register gateway
         add_filter(
