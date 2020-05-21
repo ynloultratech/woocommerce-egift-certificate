@@ -15,7 +15,10 @@
  * Description: Use eGiftCertificate as a form of exchange for goods
  * Version: 1.0
  * Author: YnloUltratech
- * Author URI: http://ynloultratech.com/
+ * Author URI: http://ynloultratech.com
+ * Requires PHP: 5.6
+ * WC requires at least: 3.4
+ * WC tested up to: 4.1
  **/
 
 if (!defined('ABSPATH')) {
@@ -75,10 +78,11 @@ HTML;
         include __DIR__.DIRECTORY_SEPARATOR.'updater.php';
         include __DIR__.DIRECTORY_SEPARATOR.'wc-gateway-egift-certificate.php';
 
+        // updater
         $updater = new eGiftCertificate_Updater(__FILE__);
-        add_filter('pre_set_site_transient_update_plugins', [$updater, 'setTransient']);
-        add_filter('plugins_api', [$updater, 'setPluginInfo']);
-        add_filter('upgrader_post_install', [$updater, 'postInstall']);
+       add_filter('pre_set_site_transient_update_plugins', [$updater, 'setTransient']);
+        add_filter('plugins_api', [$updater, 'setPluginInfo'], 10, 3);
+      //  add_filter('upgrader_post_install', [$updater, 'postInstall'], 10, 3);
 
         // register gateway
         add_filter(

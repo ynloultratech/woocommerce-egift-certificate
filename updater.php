@@ -95,7 +95,7 @@ class eGiftCertificate_Updater
 
             $obj = new \stdClass();
             $obj->slug = $this->slug;
-            $obj->new_version = $this->githubAPIResult->tag_name;
+            $obj->new_version = $releaseVersion;
             $obj->url = $this->pluginData["PluginURI"];
             $obj->package = $package;
             $transient->response[$this->slug] = $obj;
@@ -122,7 +122,7 @@ class eGiftCertificate_Updater
         $this->getRepoReleaseInfo();
 
         // If nothing is found, do nothing
-        if (empty($response->slug) || $response->slug != $this->slug) {
+        if (empty($response->slug) || $response->slug !== $this->slug) {
             return false;
         }
 
@@ -130,9 +130,14 @@ class eGiftCertificate_Updater
         $response->last_updated = $this->githubAPIResult->published_at;
         $response->slug = $this->slug;
         $response->plugin_name = $this->pluginData["Name"];
-        $response->version = $this->githubAPIResult->tag_name;
+        $response->version = $this->pluginData["Version"];
         $response->author = $this->pluginData["AuthorName"];
         $response->homepage = $this->pluginData["PluginURI"];
+        $response->requires_php = $this->pluginData["RequiresPHP"];
+        $response->banners = [
+            'high' => "https://raw.githubusercontent.com/{$this->username}/{$this->repo}/master/egift.png",
+            'low' => "https://raw.githubusercontent.com/{$this->username}/{$this->repo}/master/egift.png",
+        ];
 
         // Release download zip file
         if ($this->githubAPIResult->assets) {
@@ -141,12 +146,31 @@ class eGiftCertificate_Updater
         }
 
         $parsedown = new eGiftCertificate_Parsedown();
+        $readmeResponse = wp_remote_get("https://raw.githubusercontent.com/{$this->username}/{$this->repo}/master/README.md", ['timeout' => 60]);
+        $changeLogResponse = wp_remote_get("https://raw.githubusercontent.com/{$this->username}/{$this->repo}/master/CHANGELOG.md", ['timeout' => 60]);
+
+        $description = $this->pluginData["Description"];
+        if (isset($readmeResponse['body'])) {
+            // remove image
+            $description = $readmeResponse['body'];
+            $description = preg_replace('/!\[eGiftCertificate\]\([^)]+\)/', null, $description);
+            $description = preg_replace('/##\s+/', '###', $description);
+            $description = $parsedown->parse($description);
+        }
+
+        $changeLog = null;
+        if (isset($changeLogResponse['body'])) {
+            $changeLog = preg_replace('/##\s+/', '###', $changeLogResponse['body']);
+            $changeLog = $parsedown->parse($changeLog);
+        }
 
         // Create tabs in the lightbox
         $response->sections = [
-            'description' => $this->pluginData["Description"],
-            'changelog' => $parsedown->parse($this->githubAPIResult->body),
+            'description' => $description,
+            'changelog' => $changeLog,
         ];
+
+        array_filter($response->sections);
 
         // Gets the required version of WP if available
         $matches = null;
