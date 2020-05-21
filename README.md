@@ -1,6 +1,5 @@
 # WooCommerce eGiftCertificate
 
-[![Downloads](https://img.shields.io/github/downloads/ynloultratech/woocommerce-egift-certificate/total.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate/releases/latest)
 [![Version](https://img.shields.io/github/release/ynloultratech/woocommerce-egift-certificate.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate)
 [![WordPress](https://img.shields.io/badge/Wordpress-4.6+-blue.svg)](http://wordpress.com)
 [![License](https://img.shields.io/github/license/ynloultratech/woocommerce-egift-certificate.svg)](https://github.com/ynloultratech/woocommerce-egift-certificate/blob/master/LICENSE)
