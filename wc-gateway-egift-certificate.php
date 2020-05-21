@@ -101,19 +101,20 @@ HTML;
         $this->debug = 'yes' === $this->get_option('debug', 'no');
         $this->apiID = $this->get_option('api_id');
         $this->apiKey = $this->get_option('api_key');
+
         self::$log_enabled = $this->debug;
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_egift-ipn', [$this, 'ipnHandler']);
-        add_action('after_woocommerce_pay', [$this, 'afterPayment']);
 
         if ($this->get_option('iframe') === 'yes') {
+            add_action('after_woocommerce_pay', [$this, 'afterPayment']);
             wp_enqueue_script('egiftCertificateWidget', $this->eGiftWidgetScript);
         }
 
         add_filter(
             'woocommerce_order_details_after_order_table_items',
-            function (WC_Order $order) {
+            static function (WC_Order $order) {
                 $pin = $order->get_meta(self::META_EGIFT_PIN);
                 if ($pin) {
                     echo <<<HTML
@@ -184,6 +185,9 @@ HTML;
         return $this->processPaymentOnNewOrder($order);
     }
 
+    /**
+     * After payment hook to render initialize the widget
+     */
     public function afterPayment()
     {
         global $wp;
@@ -215,11 +219,8 @@ HTML;
 
     public function processPaymentOnNewOrder(WC_Order $order)
     {
-        if (!class_exists('JWT')) {
-            include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
-        }
 
-        $claimToken = JWT::encode(
+        $claimToken = eGiftCertificate_JWT::encode(
             [
                 'jti' => wp_generate_uuid4(),
                 'iss' => $this->apiID,
@@ -243,11 +244,7 @@ HTML;
 
     public function getParams(WC_Order $order)
     {
-        if (!class_exists('JWT')) {
-            include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
-        }
-
-        $token = JWT::encode(
+        $token = eGiftCertificate_JWT::encode(
             [
                 'jti' => $order->get_id(),
                 'iss' => $this->apiID,
@@ -302,10 +299,9 @@ mutation (\$pin: String!){
 }
 GraphQL;
 
-        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
         $egiftGateway = new WC_Gateway_EGift_Certificate();
 
-        $token = JWT::encode(
+        $token = eGiftCertificate_JWT::encode(
             [
                 'jti' => wp_generate_uuid4(),
                 'iss' => $egiftGateway->get_option('api_id'),
@@ -349,22 +345,20 @@ GraphQL;
     {
         $token = @file_get_contents('php://input');
 
-        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
-
         if (!$token) {
             self::log('IPN received without a token in the body', 'error');
             wp_die('IPN Request Failure', 'eGiftCertificate IPN', ['response' => 500]);
         }
 
         try {
-            $payload = JWT::decode($token, $this->apiKey, ['HS256']);
+            $payload = eGiftCertificate_JWT::decode($token, $this->apiKey, ['HS256']);
         } catch (\Exception $exception) {
             self::log('IPN received with invalid token', 'error');
             wp_die($exception->getMessage(), 'eGiftCertificate IPN', ['response' => 500]);
             exit;
         }
 
-        if (isset($payload->orderNumber)) {
+        if (isset($payload, $payload->orderNumber)) {
             $order = wc_get_order($payload->orderNumber);
 
             //allow up to 10 cents of difference in amount

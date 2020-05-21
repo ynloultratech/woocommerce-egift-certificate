@@ -6,14 +6,14 @@
  * @copyright 2019 Copyright(c) - All rights reserved.
  * @author    YNLO-Ultratech Development Team <developer@ynloultratech.com>
  * @package   woocommerce-egift-WC_Gateway_EGift_Certificate
- * @version   2.0.x
+ * @version   1.0.x
  */
 
 /**
  * Plugin Name: WooCommerce eGiftCertificate
  * Plugin URI: https://www.paynup.com
  * Description: Use eGiftCertificate as a form of exchange for goods
- * Version: 2.0
+ * Version: 1.0
  * Author: YnloUltratech
  * Author URI: http://ynloultratech.com/
  **/
@@ -41,43 +41,55 @@ HTML;
     return;
 }
 
-add_action('plugins_loaded', 'egift_init');
+add_action(
+    'plugins_loaded',
+    static function () {
 
-function egift_init()
-{
-
-    // verify WooCommerce version
-    if (!version_compare(WooCommerce::instance()->version, '3.4', '>=')) {
-        add_action(
-            'admin_notices',
-            function () {
-                $version = WooCommerce::instance()->version;
-                $notice = <<<HTML
+        // verify WooCommerce version
+        if (!version_compare(WooCommerce::instance()->version, '3.4', '>=')) {
+            add_action(
+                'admin_notices',
+                static function () {
+                    $version = WooCommerce::instance()->version;
+                    $notice = <<<HTML
         <div class="notice notice-error is-dismissible">
             <p>WooCommerce eGiftCertificate require <a href="https://wordpress.org/plugins/woocommerce/" target="_blank">WooCommerce</a> version 3.4 or greater.
             Your current version ($version) is not compatible.</p>
         </div>
 HTML;
-                echo $notice;
+                    echo $notice;
 
+                }
+            );
+
+            return;
+        }
+
+        if (file_exists(__DIR__.DIRECTORY_SEPARATOR.'config.php')) {
+            require __DIR__.DIRECTORY_SEPARATOR.'config.php';
+        }
+
+        include __DIR__.DIRECTORY_SEPARATOR.'functions.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'jwt.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'parsedown.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'updater.php';
+        include __DIR__.DIRECTORY_SEPARATOR.'wc-gateway-egift-certificate.php';
+
+        $updater = new eGiftCertificate_Updater(__FILE__);
+        add_filter('pre_set_site_transient_update_plugins', [$updater, 'setTransient']);
+        add_filter('plugins_api', [$updater, 'setPluginInfo']);
+        add_filter('upgrader_post_install', [$updater, 'postInstall']);
+
+        // register gateway
+        add_filter(
+            'woocommerce_payment_gateways',
+            static function ($gateways) {
+                $gateways[] = 'WC_Gateway_EGift_Certificate';
+
+                return $gateways;
             }
         );
-
-        return;
     }
+);
 
-    if (file_exists(__DIR__.DIRECTORY_SEPARATOR.'config.php')) {
-        require __DIR__.DIRECTORY_SEPARATOR.'config.php';
-    }
 
-    include __DIR__.DIRECTORY_SEPARATOR.'functions.php';
-    include __DIR__.DIRECTORY_SEPARATOR.'wc-gateway-egift-certificate.php';
-    add_filter(
-        'woocommerce_payment_gateways',
-        function ($gateways) {
-            $gateways[] = 'WC_Gateway_EGift_Certificate';
-
-            return $gateways;
-        }
-    );
-}
