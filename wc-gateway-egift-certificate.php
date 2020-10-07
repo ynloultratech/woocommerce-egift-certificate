@@ -224,7 +224,7 @@ HTML;
             [
                 'jti' => wp_generate_uuid4(),
                 'iss' => $this->apiID,
-                'iat' => (new DateTime())->getTimestamp(),
+                'iat' => (new DateTime('-2minutes'))->getTimestamp(),
                 'exp' => (new DateTime($this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'))->getTimestamp(),
                 'params' => $this->getParams($order),
             ],
@@ -248,7 +248,7 @@ HTML;
             [
                 'jti' => $order->get_id(),
                 'iss' => $this->apiID,
-                'iat' => (new DateTime())->getTimestamp(),
+                'iat' => (new DateTime('-2minutes'))->getTimestamp(),
                 'exp' => (new DateTime('+4hours'))->getTimestamp(),
             ],
             $this->apiKey
@@ -305,7 +305,7 @@ GraphQL;
             [
                 'jti' => wp_generate_uuid4(),
                 'iss' => $egiftGateway->get_option('api_id'),
-                'iat' => (new DateTime())->getTimestamp(),
+                'iat' => (new DateTime('-2minutes'))->getTimestamp(),
                 'exp' => (new DateTime('+4hours'))->getTimestamp(),
                 'ip' => get_the_user_ip(),
                 'agent' => wc_get_user_agent(),
