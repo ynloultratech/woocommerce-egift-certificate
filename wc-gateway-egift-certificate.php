@@ -202,7 +202,7 @@ HTML;
 
             echo <<<HTML
 <script>
-   window.onload = function() {
+   window.addEventListener('load', function(){
       eGiftCertificate.onEvent(function(e){
           switch (e.name) {
             case 'CLOSE':
@@ -210,7 +210,7 @@ HTML;
                  break;
           }
       }).start($params);
-   }
+   });
 </script>
 HTML;
         }
