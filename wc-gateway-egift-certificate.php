@@ -62,12 +62,12 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
      */
     public function __construct()
     {
-        $this->id = 'egift-certificate';
-        $this->has_fields = true;
-        $this->order_button_text = __('continue', 'woocommerce');
-        $this->method_title = __('eGiftCertificate', 'woocommerce');
-        $this->method_description = __('Use eGiftCertificate to interchange for goods', 'woocommerce');
-        $this->supports = [
+        $this->id                 = 'egift-certificate';
+        $this->has_fields         = true;
+        $this->order_button_text  = __('continue', 'woocommerce');
+        $this->method_title       = __('MESH Payment', 'woocommerce');
+        $this->method_description = __('Use MESH Payment to interchange for goods', 'woocommerce');
+        $this->supports           = [
             'products',
         ];
 
@@ -87,19 +87,24 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
+        //BC, update payment name from eGiftCertificate => MESH Payment
+        $title = $this->get_option('title', $this->method_title);
+        if ($title === 'eGiftCertificate') {
+            $title = $this->method_title;
+        }
+
         // Define user set variables.
-        $this->title = $this->get_option('title');
+        $this->title       = $title;
         $this->description = $this->get_option('description');
 
         if (empty($this->description)) {
             $this->description = <<<HTML
-<b>IMPORTANT INFORMATION FOR OPENING A MESH ACCOUNT:</b> To help the federal government fight the funding of terrorism and money laundering activities, the PATRIOT ACT Title III Section 326 and FinCEN 31 CFR 1020.220 requires us to obtain, verify and record information that identifies each person before we can activate your MESH account.</p><p>
-<b>WHAT THIS MEANS FOR YOU:</b> When you open a MESH account, we will ask for your <b>name, address, date of birth</b> and your <b>government ID number</b>.  Use of a MESH account is also subject to fraud prevention restrictions at any time, with or without notice.
+<b>MESH</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MESH</b> users will be prompted to create their <b>MESH</b> account during this process. There is a small fee added when using <b>MESH</b>. Pay safely and securely with <b>MESH!</b>
 HTML;
         }
 
-        $this->debug = 'yes' === $this->get_option('debug', 'no');
-        $this->apiID = $this->get_option('api_id');
+        $this->debug  = 'yes' === $this->get_option('debug', 'no');
+        $this->apiID  = $this->get_option('api_id');
         $this->apiKey = $this->get_option('api_key');
 
         self::$log_enabled = $this->debug;
@@ -156,7 +161,7 @@ HTML;
     /**
      * Process the payment and return the result.
      *
-     * @param  int $order_id Order ID.
+     * @param int $order_id Order ID.
      *
      * @return array
      */
@@ -195,7 +200,7 @@ HTML;
         /** @var WC_Order $order */
         $order = wc_get_order($wp->query_vars['order-pay']);
 
-        if ($order->get_payment_method() === $this->id && !isset($_GET['pay_for_order'])) {
+        if ($order->get_payment_method() === $this->id && ! isset($_GET['pay_for_order'])) {
             $params = json_encode($this->getParams($order));
 
             $checkout = $order->get_checkout_payment_url();
@@ -222,10 +227,12 @@ HTML;
 
         $claimToken = eGiftCertificate_JWT::encode(
             [
-                'jti' => wp_generate_uuid4(),
-                'iss' => $this->apiID,
-                'iat' => (new DateTime('-2minutes'))->getTimestamp(),
-                'exp' => (new DateTime($this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'))->getTimestamp(),
+                'jti'    => wp_generate_uuid4(),
+                'iss'    => $this->apiID,
+                'iat'    => (new DateTime('-2minutes'))->getTimestamp(),
+                'exp'    => (new DateTime(
+                    $this->get_option('allow_share') === 'yes' ? '+72hours' : '+4hours'
+                ))->getTimestamp(),
                 'params' => $this->getParams($order),
             ],
             $this->apiKey
@@ -237,7 +244,7 @@ HTML;
         }
 
         return [
-            'result' => 'success',
+            'result'   => 'success',
             'redirect' => $redirectUrl,
         ];
     }
@@ -260,24 +267,24 @@ HTML;
         }
 
         $params = [
-            'token' => $token,
-            'orderNumber' => $order->get_id(),
-            'amount' => $order->get_total(),
-            'receiptEmail' => $order->get_billing_email(),
-            'customerName' => $order->get_billing_first_name().' '.$order->get_billing_last_name(),
-            'customerPhone' => $order->get_billing_phone(),
+            'token'          => $token,
+            'orderNumber'    => $order->get_id(),
+            'amount'         => $order->get_total(),
+            'receiptEmail'   => $order->get_billing_email(),
+            'customerName'   => $order->get_billing_first_name().' '.$order->get_billing_last_name(),
+            'customerPhone'  => $order->get_billing_phone(),
             'billingAddress' => $order->get_billing_address_1(),
             'billingZipCode' => $order->get_billing_postcode(),
-            'billingCity' => $order->get_billing_city(),
-            'billingState' => $order->get_billing_state(),
-            'redirectUrl' => $redirectUrl,
-            'IPNHandlerUrl' => wc()->api_request_url('egift-ipn'),
-            'autoRedirect' => $this->get_option('auto_redirect') === 'yes',
-            'autoRedeem' => $this->get_option('auto_redeem') === 'yes',
-            'allowRedeem' => $this->get_option('redeem_in_store') !== 'yes',
-            'allowShare' => $this->get_option('allow_share') === 'yes',
-            'cardSwiper' => $this->get_option('card_swiper') === 'yes',
-            'qrCode' => $this->get_option('qr_code') === 'yes',
+            'billingCity'    => $order->get_billing_city(),
+            'billingState'   => $order->get_billing_state(),
+            'redirectUrl'    => $redirectUrl,
+            'IPNHandlerUrl'  => wc()->api_request_url('egift-ipn'),
+            'autoRedirect'   => $this->get_option('auto_redirect') === 'yes',
+            'autoRedeem'     => $this->get_option('auto_redeem') === 'yes',
+            'allowRedeem'    => $this->get_option('redeem_in_store') !== 'yes',
+            'allowShare'     => $this->get_option('allow_share') === 'yes',
+            'cardSwiper'     => $this->get_option('card_swiper') === 'yes',
+            'qrCode'         => $this->get_option('qr_code') === 'yes',
         ];
 
         return $params;
@@ -287,7 +294,7 @@ HTML;
     {
         $pin = $order->get_meta(self::META_EGIFT_PIN);
 
-        if (!$pin) {
+        if ( ! $pin) {
             return [];
         }
 
@@ -303,25 +310,25 @@ GraphQL;
 
         $token = eGiftCertificate_JWT::encode(
             [
-                'jti' => wp_generate_uuid4(),
-                'iss' => $egiftGateway->get_option('api_id'),
-                'iat' => (new DateTime('-2minutes'))->getTimestamp(),
-                'exp' => (new DateTime('+4hours'))->getTimestamp(),
-                'ip' => get_the_user_ip(),
-                'agent' => wc_get_user_agent(),
+                'jti'    => wp_generate_uuid4(),
+                'iss'    => $egiftGateway->get_option('api_id'),
+                'iat'    => (new DateTime('-2minutes'))->getTimestamp(),
+                'exp'    => (new DateTime('+4hours'))->getTimestamp(),
+                'ip'     => get_the_user_ip(),
+                'agent'  => wc_get_user_agent(),
                 'origin' => isset($_SERVER['HTTP_HOST']) ? wc_clean(wp_unslash($_SERVER['HTTP_HOST'])) : '',
             ],
             $egiftGateway->get_option('api_key')
         );
 
-        $body = json_encode(['query' => $mutation, 'variables' => ['pin' => $pin]]);
+        $body     = json_encode(['query' => $mutation, 'variables' => ['pin' => $pin]]);
         $response = wp_remote_post(
             $this->apiUrl,
             [
                 'headers' => [
                     'Authorization' => sprintf('Bearer %s', $token),
                 ],
-                'body' => $body,
+                'body'    => $body,
             ]
         );
 
@@ -332,7 +339,7 @@ GraphQL;
                 WC()->cart->empty_cart();
 
                 return [
-                    'result' => 'success',
+                    'result'   => 'success',
                     'redirect' => $this->get_return_url($order),
                 ];
             }
@@ -345,7 +352,7 @@ GraphQL;
     {
         $token = @file_get_contents('php://input');
 
-        if (!$token) {
+        if ( ! $token) {
             self::log('IPN received without a token in the body', 'error');
             wp_die('IPN Request Failure', 'eGiftCertificate IPN', ['response' => 500]);
         }
@@ -364,7 +371,7 @@ GraphQL;
             //allow up to 10 cents of difference in amount
             $diff = abs($payload->amount - $order->get_total());
             if ($payload->iss !== $this->apiID
-                || !$order
+                || ! $order
                 || $diff > 0.10
             ) {
                 self::log('IPN received with invalid token content, invalid order or amount', 'error');
@@ -411,7 +418,7 @@ GraphQL;
      */
     public function form()
     {
-        if (!$this->has_fields()) {
+        if ( ! $this->has_fields()) {
             $description = $this->get_description();
             if ($description) {
                 echo wpautop(wptexturize($description)); // @codingStandardsIgnoreLine.
@@ -422,9 +429,9 @@ GraphQL;
 
         global $wp;
         $order_id = $wp->query_vars['order-pay'];
-        $order = new WC_Order($order_id);
+        $order    = new WC_Order($order_id);
 
-        if (!$order->get_meta(self::META_EGIFT_PIN)) {
+        if ( ! $order->get_meta(self::META_EGIFT_PIN)) {
             echo $this->description;
 
             return;
@@ -457,7 +464,9 @@ HTML;
         $default_fields = [
             'pin-field' => '<p class="form-row form-row-wide">
 				<label for="'.esc_attr($this->id).'-pin">'.esc_html__('eGift Certificate', 'woocommerce').'&nbsp;<span class="required">*</span></label>
-				<input value="'.$order->get_meta(self::META_EGIFT_PIN).'" id="'.esc_attr($this->id).'-pin" required="required" style="font-size:18px" class="input-text" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;" '.$this->field_name('pin').' />
+				<input value="'.$order->get_meta(self::META_EGIFT_PIN).'" id="'.esc_attr($this->id)
+                           .'-pin" required="required" style="font-size:18px" class="input-text" autocomplete="cc-number" autocorrect="no" autocapitalize="no" spellcheck="no" type="text" placeholder="&bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull; &bull;&bull;&bull;&bull;" '
+                           .$this->field_name('pin').' />
 			    '.$autoRedeem.'
 			    '.$description.'
 			    <script>
