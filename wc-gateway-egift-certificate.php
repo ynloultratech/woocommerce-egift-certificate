@@ -65,8 +65,8 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->id                 = 'egift-certificate';
         $this->has_fields         = true;
         $this->order_button_text  = __('continue', 'woocommerce');
-        $this->method_title       = __('MESH Payment', 'woocommerce');
-        $this->method_description = __('Use MESH Payment to interchange for goods', 'woocommerce');
+        $this->method_title       = __('MESH', 'woocommerce');
+        $this->method_description = __('Use MESH to interchange for goods', 'woocommerce');
         $this->supports           = [
             'products',
         ];
@@ -87,7 +87,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
-        //BC, update payment name from eGiftCertificate => MESH Payment
+        //BC, update payment name from eGiftCertificate => MESH
         $title = $this->get_option('title', $this->method_title);
         if ($title === 'eGiftCertificate') {
             $title = $this->method_title;
