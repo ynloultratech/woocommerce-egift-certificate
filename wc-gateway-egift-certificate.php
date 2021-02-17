@@ -384,12 +384,16 @@ GraphQL;
                 $order->add_order_note(sprintf('eGiftCertificate obtained: %s', $payload->pin));
                 $order->add_meta_data(self::META_EGIFT_PIN, $payload->pin);
                 $order->save_meta_data();
+                header('Status: 200 OK');
+                exit;
             }
 
             if ($payload->status === 'USED' && $order->get_meta(self::META_EGIFT_PIN) === $payload->pin) {
                 self::log('IPN received with USED status of eGiftCertificate');
                 $order->add_order_note('eGiftCertificate validated & redeemed successfully');
                 $order->payment_complete($payload->pin);
+                header('Status: 200 OK');
+                exit;
             }
         } else {
             self::log('IPN received with invalid payload');
