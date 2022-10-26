@@ -65,8 +65,8 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->id                 = 'egift-certificate';
         $this->has_fields         = true;
         $this->order_button_text  = __('continue', 'woocommerce');
-        $this->method_title       = __('MESH', 'woocommerce');
-        $this->method_description = __('Use MESH to interchange for goods', 'woocommerce');
+        $this->method_title       = __('MAX REDEMPTION', 'woocommerce');
+        $this->method_description = __('Use MAX REDEMPTION to interchange for goods', 'woocommerce');
         $this->supports           = [
             'products',
         ];
@@ -87,19 +87,13 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
-        //BC, update payment name from eGiftCertificate => MESH
-        $title = $this->get_option('title', $this->method_title);
-        if ($title === 'eGiftCertificate') {
-            $title = $this->method_title;
-        }
-
         // Define user set variables.
-        $this->title       = $title;
-        $this->description = $this->get_option('description');
+        $this->title       = $this->get_option('title_v2', $this->method_title);
+        $this->description = $this->get_option('description_v2');
 
         if (empty($this->description)) {
             $this->description = <<<HTML
-<b>MESH</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MESH</b> users will be prompted to create their <b>MESH</b> account during this process. There is a small fee added when using <b>MESH</b>. Pay safely and securely with <b>MESH!</b>
+<b>MAX REDEMPTION</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MAX REDEMPTION</b> users will be prompted to create their <b>MAX REDEMPTION</b> account during this process. There is a small fee added when using <b>MAX REDEMPTION</b>. Pay safely and securely with <b>MAX REDEMPTION!</b>
 HTML;
         }
 
@@ -456,7 +450,7 @@ HTML;
         }
 
         $description = null;
-        if ($description = $this->get_option('description_redeem')) {
+        if ($description = $this->get_option('description_redeem_v2')) {
             $description = <<<HTML
 <p>
 $description
