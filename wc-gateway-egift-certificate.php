@@ -93,7 +93,7 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
 
         if (empty($this->description)) {
             $this->description = <<<HTML
-<b>MAX REDEMPTION</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MAX REDEMPTION</b> users will be prompted to create a new <b><a href="https://www2.vida-bank.com/" target="_blank">VIDA BANK</a></b> account during this process. There is a small fee added when using <b>MAX REDEMPTION</b>. Pay safely and securely with <b>MAX REDEMPTION!</b>
+<b>MAX REDEMPTION</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MAX REDEMPTION</b> users will be prompted to create a new account during this process. There is a small fee added when using <b>MAX REDEMPTION</b>. Pay safely and securely with <b>MAX REDEMPTION!</b>
 HTML;
         }
 
