@@ -13,17 +13,23 @@
  * Plugin Name: WooCommerce eGiftCertificate
  * Plugin URI: https://www.paynup.com
  * Description: Use eGiftCertificate as a form of exchange for goods
- * Version: 1.0.6
+ * Version: 1.0.7
  * Author: YnloUltratech
  * Author URI: http://ynloultratech.com
  * Requires PHP: 5.6
  * WC requires at least: 3.4
- * WC tested up to: 4.1
+ * WC tested up to: 8.4
  **/
 
 if (!defined('ABSPATH')) {
     exit;
 }
+
+add_action('before_woocommerce_init', function () {
+    if (class_exists(\Automattic\WooCommerce\Utilities\FeaturesUtil::class)) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
 // verify WooCommerce is active
 if (!in_array('woocommerce/woocommerce.php', apply_filters('active_plugins', get_option('active_plugins')))) {
