@@ -201,15 +201,15 @@ HTML;
 
             echo <<<HTML
 <script>
-   window.addEventListener('load', function(){
-      eGiftCertificate.onEvent(function(e){
+const startEgiftCertificate = () => typeof eGiftCertificate === 'undefined' ?
+setTimeout(startEgiftCertificate, 100) : eGiftCertificate.onEvent(function(e){
           switch (e.name) {
             case 'CLOSE':
                  window.location = '$checkout';
                  break;
           }
-      }).start($params);
-   });
+}).start($params);
+startEgiftCertificate();
 </script>
 HTML;
         }
