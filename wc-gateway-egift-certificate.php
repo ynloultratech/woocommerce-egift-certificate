@@ -87,13 +87,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
+        $this->title = "Credit/Debit via Max Redemption (US Only)";
         // Define user set variables.
-        $this->title       = $this->get_option('title_v2', $this->method_title);
-        $this->description = $this->get_option('description_v2');
-
         if (empty($this->description)) {
             $this->description = <<<HTML
-<b>MAX REDEMPTION</b> is a secure payment option that accepts Visa, Mastercard, and Discover up to $1,000. New <b>MAX REDEMPTION</b> users will be prompted to create a new account during this process. There is a small fee added when using <b>MAX REDEMPTION</b>. Pay safely and securely with <b>MAX REDEMPTION!</b>
+<b>MAX REDEMPTION</b> is a secure transaction service that accepts Visa, Mastercard, and Discover. Your credit/debit card will only be used to fund your <b>Max Redemption account</b>. Your available funds can then be used to complete your transaction with a one time <b>e-Gift certificate</b> redeemed with the participating merchant.
 HTML;
         }
 
@@ -105,11 +103,6 @@ HTML;
 
         add_action('woocommerce_update_options_payment_gateways_'.$this->id, [$this, 'process_admin_options']);
         add_action('woocommerce_api_egift-ipn', [$this, 'ipnHandler']);
-
-        if ($this->get_option('iframe') === 'yes') {
-            add_action('after_woocommerce_pay', [$this, 'afterPayment']);
-            wp_enqueue_script('egiftCertificateWidget', $this->eGiftWidgetScript);
-        }
 
         add_filter(
             'woocommerce_order_details_after_order_table_items',
@@ -233,9 +226,6 @@ HTML;
         );
 
         $redirectUrl = $this->eGiftPaymentUrl.'?'.http_build_query(['claim' => $claimToken]);
-        if ($this->get_option('iframe') === 'yes') {
-            $redirectUrl = $order->get_checkout_payment_url(true);
-        }
 
         return [
             'result'   => 'success',
@@ -273,12 +263,10 @@ HTML;
             'billingState'   => $order->get_billing_state(),
             'redirectUrl'    => $redirectUrl,
             'IPNHandlerUrl'  => wc()->api_request_url('egift-ipn'),
-            'autoRedirect'   => $this->get_option('auto_redirect') === 'yes',
-            'autoRedeem'     => $this->get_option('auto_redeem') === 'yes',
-            'allowRedeem'    => $this->get_option('redeem_in_store') !== 'yes',
-            'allowShare'     => $this->get_option('allow_share') === 'yes',
-            'cardSwiper'     => $this->get_option('card_swiper') === 'yes',
+            'autoRedirect'   => true,
+            'autoRedeem'     => true,
             'qrCode'         => $this->get_option('qr_code') === 'yes',
+            'version'        => getVersion(),
         ];
 
         return $params;
