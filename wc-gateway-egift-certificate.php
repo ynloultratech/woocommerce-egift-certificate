@@ -87,11 +87,11 @@ class WC_Gateway_EGift_Certificate extends WC_Payment_Gateway_CC
         $this->init_form_fields();
         $this->init_settings();
 
-        $this->title = "Credit/Debit via Max Redemption (US Only)";
+        $this->title = "US Credit/Debit via Digital Gift Certificate";
         // Define user set variables.
         if (empty($this->description)) {
             $this->description = <<<HTML
-<b>MAX REDEMPTION</b> is a secure transaction service that accepts Visa, Mastercard, and Discover. Your credit/debit card will only be used to fund your <b>Max Redemption account</b>. Your available funds can then be used to complete your transaction with a one time <b>e-Gift certificate</b> redeemed with the participating merchant.
+You will be redirected to a secure third-party service where you can purchase and redeem a one-time use digital gift certificate for the value of your purchase.
 HTML;
         }
 
